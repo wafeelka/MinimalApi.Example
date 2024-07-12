@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<HotelContext>(options => {
@@ -14,33 +17,41 @@ if(app.Environment.IsDevelopment())
     context.Database.EnsureCreated();
 }
 
-app.MapGet("/hotels", async (HotelContext context, CancellationToken cancellationToken) => await context.Hotels.ToListAsync(cancellationToken));
-app.MapGet("/hotels/{id}", async (HotelContext context, int id, CancellationToken cancellationToken) => await context.Hotels.FindAsync(id, cancellationToken));
-app.MapPost("/hotels", async (HotelContext context, Hotel hotel, CancellationToken cancellationToken) => {
+app.MapGet("/hotels", async Task<Results<Ok<List<Hotel>>, NotFound>> (HotelContext context, CancellationToken cancellationToken) => 
+{
+    var hotels = await context.Hotels.ToListAsync(cancellationToken);
+    return hotels.Count > 0 ? TypedResults.Ok(hotels) : TypedResults.NotFound();
+});
+
+app.MapGet("/hotels/{id}", async Task<Results<Ok<Hotel>, NotFound>> (HotelContext context, int id, CancellationToken cancellationToken) => 
+{
+    return await context.Hotels.FindAsync(id, cancellationToken) is {}  hotel ?
+    TypedResults.Ok(hotel) : TypedResults.NotFound();
+});
+
+app.MapPost("/hotels", async Task<Results<Created, BadRequest>> (HotelContext context, Hotel hotel, CancellationToken cancellationToken) => 
+{
     context.Hotels.Add(hotel);
     await context.SaveChangesAsync(cancellationToken);
+    return TypedResults.Created();
 });
-app.MapPut("/hotels", async (HotelContext context, Hotel hotel, CancellationToken cancellationToken) => {
+
+app.MapPut("/hotels", async Task<Results<NoContent, NotFound>> (HotelContext context, Hotel hotel, CancellationToken cancellationToken) => 
+{
     var findedHotel = await context.Hotels.FindAsync(hotel.Id, cancellationToken);
     if(findedHotel is null)
-        throw new Exception("not found");
-    findedHotel = hotel;
+        return TypedResults.NotFound();
+    findedHotel.Lattitude = hotel.Lattitude;
+    findedHotel.Longittude = hotel.Longittude;
+    findedHotel.Name = hotel.Name;
     await context.SaveChangesAsync(cancellationToken);
-    return StatusCodes.Status204NoContent;
-    });
-app.MapDelete("/hotels/{id}", async (HotelContext context, int id, CancellationToken cancellationToken) => 
-    await context.Hotels.Where(h => h.Id == id).ExecuteDeleteAsync(cancellationToken));
-app.Run();
+    return TypedResults.NoContent();
+});
 
-public class Hotel
+app.MapDelete("/hotels/{id}", async Task<Results<Ok, BadRequest>> (HotelContext context, int id, CancellationToken cancellationToken) => 
 {
-    public int Id { get; set; }
-    public string Name { get; set; } = string.Empty;
-    public double Lattitude { get; set; }
-    public double Longittude { get; set; }
-}
-public class HotelContext : DbContext
-{
-    public HotelContext(DbContextOptions<HotelContext> options) : base(options){}
-    public DbSet<Hotel> Hotels => Set<Hotel>();
-}
+      await context.Hotels.Where(h => h.Id == id).ExecuteDeleteAsync(cancellationToken);
+      return TypedResults.Ok();
+});
+  
+app.Run();
