@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc.Authorization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,10 +8,31 @@ builder.Services.AddDbContext<HotelContext>(options => {
 });
 
 builder.Services.AddScoped<IHotelRepository, HotelRepository>();
+builder.Services.AddSingleton<IUserRepository>(new UserRepository());
+builder.Services.AddSingleton<ITokenService>(new TokenService());
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options => 
+{
+    options.TokenValidationParameters = new()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+    };
+});
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
+app.UseAuthorization();
+app.UseAuthentication();
 if(app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -20,7 +42,23 @@ if(app.Environment.IsDevelopment())
     context.Database.EnsureCreated();
 }
 app.UseHttpsRedirection();
-app.MapGet("/hotels", async Task<Results<Ok<IReadOnlyList<Hotel>>, NotFound>> (IHotelRepository repository, CancellationToken cancellationToken) => 
+
+app.MapGet("/login", [AllowAnonymous] async  (HttpContext context, ITokenService tokenService,
+ IUserRepository userRepository) => 
+{
+    var userModel = new UserModel()
+    {
+        UserName = context.Request.Query["username"],
+        Password = context.Request.Query["password"]
+    };
+    var userDto = userRepository.GetUser(userModel);
+    if(userDto is null) return Results.Unauthorized();
+    var token = tokenService.BuildToken(builder.Configuration["Jwt:Key"], 
+              builder.Configuration["Jwt:Issuer"], userDto);
+    return Results.Ok(token);
+});
+
+app.MapGet("/hotels", [Authorize] async Task<Results<Ok<IReadOnlyList<Hotel>>, NotFound>> (IHotelRepository repository, CancellationToken cancellationToken) => 
 {
     var hotels = await repository.GetHotelsAsync(cancellationToken);
     return hotels.Count > 0 ? TypedResults.Ok(hotels) : TypedResults.NotFound();
@@ -28,7 +66,7 @@ app.MapGet("/hotels", async Task<Results<Ok<IReadOnlyList<Hotel>>, NotFound>> (I
 .WithName("GetAllHotels")
 .WithTags("Getters");
 
-app.MapGet("/hotels/{id}", async Task<Results<Ok<Hotel>, NotFound>> (IHotelRepository repository, int id, CancellationToken cancellationToken) => 
+app.MapGet("/hotels/{id}", [Authorize] async Task<Results<Ok<Hotel>, NotFound>> (IHotelRepository repository, int id, CancellationToken cancellationToken) => 
 {
     return await repository.GetByIdAsync(id, cancellationToken) is {}  hotel ?
     TypedResults.Ok(hotel) : TypedResults.NotFound();
@@ -36,7 +74,7 @@ app.MapGet("/hotels/{id}", async Task<Results<Ok<Hotel>, NotFound>> (IHotelRepos
 .WithName("GetHotelById")
 .WithTags("Getters");
 
-app.MapGet("/hotels/{name}", async Task<Results<Ok<Hotel>, NotFound>> (IHotelRepository repository, string name, CancellationToken cancellationToken) => 
+app.MapGet("/hotels/{name}",[Authorize]  async Task<Results<Ok<Hotel>, NotFound>> (IHotelRepository repository, string name, CancellationToken cancellationToken) => 
 {
     return await repository.GetByNameAsync(name, cancellationToken) is {}  hotel ?
     TypedResults.Ok(hotel) : TypedResults.NotFound();
@@ -44,7 +82,7 @@ app.MapGet("/hotels/{name}", async Task<Results<Ok<Hotel>, NotFound>> (IHotelRep
 .WithName("GetHotelByName")
 .WithTags("Getters");;
 
-app.MapPost("/hotels", async Task<Results<Created, BadRequest>> (IHotelRepository repository, Hotel hotel, CancellationToken cancellationToken) => 
+app.MapPost("/hotels", [Authorize] async Task<Results<Created, BadRequest>> (IHotelRepository repository, Hotel hotel, CancellationToken cancellationToken) => 
 {
     await repository.AddHotelAsync(hotel, cancellationToken);
     await repository.SaveChangesAsync(cancellationToken);
@@ -55,7 +93,7 @@ app.MapPost("/hotels", async Task<Results<Created, BadRequest>> (IHotelRepositor
 .WithName("CreateHotel")
 .WithTags("Posts");
 
-app.MapPut("/hotels", async Task<Results<NoContent, NotFound>> (IHotelRepository repository, Hotel hotel, CancellationToken cancellationToken) => 
+app.MapPut("/hotels", [Authorize]  async Task<Results<NoContent, NotFound>> (IHotelRepository repository, Hotel hotel, CancellationToken cancellationToken) => 
 {
     var findedHotel = await repository.GetByIdAsync(hotel.Id, cancellationToken);
     if(findedHotel is null)
