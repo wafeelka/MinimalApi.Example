@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\adeev\\source\\repos\\MinimalApi.Example\\MinimalApi.Example.csproj": {}
+    "C:\\Users\\Артем\\source\\MinimalApi.Example\\MinimalApi.Example.csproj": {}
   },
   "projects": {
-    "C:\\Users\\adeev\\source\\repos\\MinimalApi.Example\\MinimalApi.Example.csproj": {
+    "C:\\Users\\Артем\\source\\MinimalApi.Example\\MinimalApi.Example.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\adeev\\source\\repos\\MinimalApi.Example\\MinimalApi.Example.csproj",
+        "projectUniqueName": "C:\\Users\\Артем\\source\\MinimalApi.Example\\MinimalApi.Example.csproj",
         "projectName": "MinimalApi.Example",
-        "projectPath": "C:\\Users\\adeev\\source\\repos\\MinimalApi.Example\\MinimalApi.Example.csproj",
-        "packagesPath": "C:\\Users\\adeev\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\adeev\\source\\repos\\MinimalApi.Example\\obj\\",
+        "projectPath": "C:\\Users\\Артем\\source\\MinimalApi.Example\\MinimalApi.Example.csproj",
+        "packagesPath": "C:\\Users\\Артем\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Артем\\source\\MinimalApi.Example\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\adeev\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\Артем\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -94,7 +94,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.303/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

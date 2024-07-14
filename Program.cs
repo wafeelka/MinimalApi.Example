@@ -30,8 +30,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
-app.UseAuthorization();
 app.UseAuthentication();
+app.UseAuthorization();
+
 if(app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -72,14 +73,6 @@ app.MapGet("/hotels/{id}", [Authorize] async Task<Results<Ok<Hotel>, NotFound>> 
 })
 .WithName("GetHotelById")
 .WithTags("Getters");
-
-app.MapGet("/hotels/{name}",[Authorize]  async Task<Results<Ok<Hotel>, NotFound>> (IHotelRepository repository, string name, CancellationToken cancellationToken) => 
-{
-    return await repository.GetByNameAsync(name, cancellationToken) is {}  hotel ?
-    TypedResults.Ok(hotel) : TypedResults.NotFound();
-})
-.WithName("GetHotelByName")
-.WithTags("Getters");;
 
 app.MapPost("/hotels", [Authorize] async Task<Results<Created, BadRequest>> (IHotelRepository repository, Hotel hotel, CancellationToken cancellationToken) => 
 {
