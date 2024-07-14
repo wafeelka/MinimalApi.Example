@@ -1,6 +1,6 @@
 public class TokenService : ITokenService
 {
-    private TimeSpan  EXPIRY_DURATION = new TimeSpan(0, 30, 0);
+    private TimeSpan EXPIRY_DURATION = new TimeSpan(0, 30, 0);
     public string BuildToken(string key, string issuer, UserDto userDto)
     {
         var claims = new[]
