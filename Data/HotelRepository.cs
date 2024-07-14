@@ -18,10 +18,13 @@ public class HotelRepository : IHotelRepository
     public async Task<Hotel?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
         await _hotelContext.Hotels.FindAsync(id, cancellationToken);
     
-
+    public async Task<Hotel> GetByNameAsync(string name, CancellationToken cancellationToken = default) =>
+        await _hotelContext.Hotels.FirstOrDefaultAsync(h => h.Name == name,  cancellationToken);
+   
     public async Task<IReadOnlyList<Hotel>> GetHotelsAsync(CancellationToken cancellationToken = default) =>
         await _hotelContext.Hotels.ToListAsync();
     
+
     public async Task UpdateHotelAsync(Hotel hotel, CancellationToken cancellationToken = default)
     {
         var findedHotel = await _hotelContext.Hotels.FindAsync(hotel.Id, cancellationToken);
@@ -31,6 +34,7 @@ public class HotelRepository : IHotelRepository
         findedHotel.Longittude = hotel.Longittude;
         findedHotel.Name = hotel.Name;
     }
+    
     public async Task SaveChangesAsync(CancellationToken cancellationToken = default) => 
         await _hotelContext.SaveChangesAsync(cancellationToken);
 

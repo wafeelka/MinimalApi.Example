@@ -7,34 +7,53 @@ builder.Services.AddDbContext<HotelContext>(options => {
 });
 
 builder.Services.AddScoped<IHotelRepository, HotelRepository>();
-
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 if(app.Environment.IsDevelopment())
 {
+    app.UseSwagger();
+    app.UseSwaggerUI();
     using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<HotelContext>();
     context.Database.EnsureCreated();
 }
-
+app.UseHttpsRedirection();
 app.MapGet("/hotels", async Task<Results<Ok<IReadOnlyList<Hotel>>, NotFound>> (IHotelRepository repository, CancellationToken cancellationToken) => 
 {
     var hotels = await repository.GetHotelsAsync(cancellationToken);
     return hotels.Count > 0 ? TypedResults.Ok(hotels) : TypedResults.NotFound();
-});
+})
+.WithName("GetAllHotels")
+.WithTags("Getters");
 
 app.MapGet("/hotels/{id}", async Task<Results<Ok<Hotel>, NotFound>> (IHotelRepository repository, int id, CancellationToken cancellationToken) => 
 {
     return await repository.GetByIdAsync(id, cancellationToken) is {}  hotel ?
     TypedResults.Ok(hotel) : TypedResults.NotFound();
-});
+})
+.WithName("GetHotelById")
+.WithTags("Getters");
+
+app.MapGet("/hotels/{name}", async Task<Results<Ok<Hotel>, NotFound>> (IHotelRepository repository, string name, CancellationToken cancellationToken) => 
+{
+    return await repository.GetByNameAsync(name, cancellationToken) is {}  hotel ?
+    TypedResults.Ok(hotel) : TypedResults.NotFound();
+})
+.WithName("GetHotelByName")
+.WithTags("Getters");;
 
 app.MapPost("/hotels", async Task<Results<Created, BadRequest>> (IHotelRepository repository, Hotel hotel, CancellationToken cancellationToken) => 
 {
     await repository.AddHotelAsync(hotel, cancellationToken);
     await repository.SaveChangesAsync(cancellationToken);
     return TypedResults.Created();
-});
+})
+.Accepts<Hotel>("application/json")
+//.Produces(StatusCodes.Status201Created)
+.WithName("CreateHotel")
+.WithTags("Posts");
 
 app.MapPut("/hotels", async Task<Results<NoContent, NotFound>> (IHotelRepository repository, Hotel hotel, CancellationToken cancellationToken) => 
 {
@@ -46,12 +65,19 @@ app.MapPut("/hotels", async Task<Results<NoContent, NotFound>> (IHotelRepository
     findedHotel.Name = hotel.Name;
     await repository.SaveChangesAsync(cancellationToken);
     return TypedResults.NoContent();
-});
+})
+.Accepts<Hotel>("application/json")
+.Produces(StatusCodes.Status204NoContent)
+.WithName("UpdateHotel")
+.WithTags("Puts");
 
 app.MapDelete("/hotels/{id}", async Task<Results<Ok, BadRequest>> (IHotelRepository repository, int id, CancellationToken cancellationToken) => 
 {
       await repository.DeleteHotelAsync(id, cancellationToken);
       return TypedResults.Ok();
-});
+})
+.Produces(StatusCodes.Status200OK)
+.WithName("DeleteHotel")
+.WithTags("Deletes");
   
 app.Run();

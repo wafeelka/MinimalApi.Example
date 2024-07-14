@@ -138,3 +138,8 @@ C:\Users\Артем\source\MinimalApi.Example\obj\Debug\net8.0\refint\MinimalApi
 C:\Users\Артем\source\MinimalApi.Example\obj\Debug\net8.0\MinimalApi.Example.pdb
 C:\Users\Артем\source\MinimalApi.Example\obj\Debug\net8.0\MinimalApi.Example.genruntimeconfig.cache
 C:\Users\Артем\source\MinimalApi.Example\obj\Debug\net8.0\ref\MinimalApi.Example.dll
+C:\Users\adeev\source\repos\MinimalApi.Example\bin\Debug\net8.0\Microsoft.OpenApi.dll
+C:\Users\adeev\source\repos\MinimalApi.Example\bin\Debug\net8.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\adeev\source\repos\MinimalApi.Example\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\adeev\source\repos\MinimalApi.Example\bin\Debug\net8.0\Swashbuckle.AspNetCore.SwaggerUI.dll
+C:\Users\adeev\source\repos\MinimalApi.Example\obj\Debug\net8.0\MinimalApi.Example.MvcApplicationPartsAssemblyInfo.cs
